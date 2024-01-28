@@ -73,54 +73,6 @@ def targetpad_transform(target_ratio: float, dim: int):
         Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
     ])
 
-
-class FashionIQDataset(Dataset):
-    """
-    FashionIQ dataset class which manage FashionIQ data
-    The dataset yield tuples made of (image_name, image)
-    The dataset manage an arbitrary numbers of FashionIQ category, e.g. only dress, dress+toptee+shirt, dress+shirt...
-    """
-
-    def __init__(self, split: str, dress_types: List[str], preprocess: callable):
-        """
-        :param split: dataset split, should be in ['test', 'val']
-        :param dress_types: list of fashionIQ category
-        :param preprocess: function which preprocess the image
-        """
-        self.dress_types = dress_types
-        self.split = split
-
-        if split not in ['test', 'val']:
-            raise ValueError("split should be in ['test', 'val']")
-        for dress_type in dress_types:
-            if dress_type not in ['dress', 'shirt', 'toptee']:
-                raise ValueError("dress_type should be in ['dress', 'shirt', 'toptee']")
-
-        self.preprocess = preprocess
-
-        # get the image names
-        self.image_names: list = []
-        for dress_type in dress_types:
-            with open(
-                    server_base_path / 'fashionIQ_dataset' / 'image_splits' / f'split.{dress_type}.{split}.json') as f:
-                self.image_names.extend(json.load(f))
-
-        print(f"FashionIQ {split} - {dress_types} dataset initialized")
-
-    def __getitem__(self, index):
-        try:
-            image_name = self.image_names[index]
-            image_path = server_base_path / 'fashionIQ_dataset' / 'images' / f"{image_name}.jpg"
-            image = self.preprocess(PIL.Image.open(image_path))
-            return image_name, image
-
-        except Exception as e:
-            print(f"Exception: {e}")
-
-    def __len__(self):
-        return len(self.image_names)
-
-
 class CIRRDataset(Dataset):
     """
     CIRR dataset class which manage CIRR data

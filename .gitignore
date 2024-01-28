@@ -5,6 +5,7 @@
 ### DATA ###
 cirr_dataset/
 data/
+uploaded_files/
 *.zip
 
 ### Flask ###
