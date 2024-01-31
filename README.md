@@ -4,6 +4,8 @@
 
 This demo is a part of the final project for the CS336 course - Multimedia Information Retrieval at UIT.
 
+In this demo, we present an interactive system based on a combiner network, trained using contrastive learning, that combines visual and textual features obtained from the OpenAI CLIP network. The system uses Faiss library for efficient similarity search.
+
 ### Built With
 * [Python](https://www.python.org/)
 * [PyTorch](https://pytorch.org/)
@@ -11,6 +13,7 @@ This demo is a part of the final project for the CS336 course - Multimedia Infor
 * [CLIP](https://github.com/openai/CLIP)
 * [Flask](https://flask.palletsprojects.com/en/2.0.x/)
 * [Bootstrap](https://getbootstrap.com/)
+* [Faiss](https://github.com/facebookresearch/faiss)
 
 ### Tested On
 * Windows 11
@@ -89,8 +92,9 @@ By default, the server run on port 5000 of localhost address: http://127.0.0.1:5
 
 ## Original repository
 This project is based on the [official repository](https://github.com/ABaldrati/CLIP4CirDemo) of the paper [Effective conditioned and composed image retrieval combining CLIP-based features](https://openaccess.thecvf.com/content/CVPR2022/papers/Baldrati_Effective_Conditioned_and_Composed_Image_Retrieval_Combining_CLIP-Based_Features_CVPR_2022_paper.pdf)
+
 ## Acknowledgement
-Our reproduction of the methods is based on the respective official repository, we thank the authors to release their code. If you use the related part, please cite the corresponding paper.
+Our demo is based on the respective official repositories, we thank the authors to release their code. If you use the related parts, please cite the corresponding papers.
 
 ## Reference
 [DEMO paper](https://openaccess.thecvf.com/content/CVPR2022/papers/Baldrati_Effective_Conditioned_and_Composed_Image_Retrieval_Combining_CLIP-Based_Features_CVPR_2022_paper.pdf)
@@ -101,6 +105,32 @@ Our reproduction of the methods is based on the respective official repository, 
   booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
   pages={21466--21474},
   year={2022}
+}
+```
+
+[Faiss research paper](https://arxiv.org/pdf/2401.08281.pdf)
+```bibtex
+@article{douze2024faiss,
+      title={The Faiss library},
+      author={Matthijs Douze and Alexandr Guzhva and Chengqi Deng and Jeff Johnson and Gergely Szilvasy and Pierre-Emmanuel Mazaré and Maria Lomeli and Lucas Hosseini and Hervé Jégou},
+      year={2024},
+      eprint={2401.08281},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+```
+
+[Faiss GPU version](https://arxiv.org/pdf/1702.08734.pdf)
+```bibtex
+@article{johnson2019billion,
+  title={Billion-scale similarity search with {GPUs}},
+  author={Johnson, Jeff and Douze, Matthijs and J{\'e}gou, Herv{\'e}},
+  journal={IEEE Transactions on Big Data},
+  volume={7},
+  number={3},
+  pages={535--547},
+  year={2019},
+  publisher={IEEE}
 }
 ```
 
