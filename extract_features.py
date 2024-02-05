@@ -1,13 +1,15 @@
 import pickle
 from typing import Union
-
+import gdown
 import clip
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import os
+import torch.nn.functional as F
 
-from data_utils import FashionIQDataset, targetpad_transform, CIRRDataset, data_path
+from data_utils import targetpad_transform, CIRRDataset, data_path
 from utils import collate_fn
 
 if torch.cuda.is_available():
@@ -16,7 +18,7 @@ else:
     device = torch.device("cpu")
 
 
-def extract_and_save_index_features(dataset: Union[CIRRDataset, FashionIQDataset], clip_model: nn.Module,
+def extract_and_save_index_features(dataset: CIRRDataset, clip_model: nn.Module,
                                     feature_dim: int, file_name: str):
     """
     Extract CIRR or fashionIQ features (with the respective names) from a dataset object and save them into a file
@@ -44,7 +46,8 @@ def extract_and_save_index_features(dataset: Union[CIRRDataset, FashionIQDataset
             batch_features = clip_model.encode_image(images)
             index_features = torch.vstack((index_features, batch_features))
             index_names.extend(names)
-
+            
+    index_features = F.normalize(index_features, dim=-1).float()
     # save the extracted features
     data_path.mkdir(exist_ok=True, parents=True)
     torch.save(index_features, data_path / f"{file_name}_index_features.pt")
@@ -54,8 +57,14 @@ def extract_and_save_index_features(dataset: Union[CIRRDataset, FashionIQDataset
 
 def main():
     # define clip model and preprocess pipeline, get input_dim and feature_dim
+    if not os.path.isfile('cirr_comb_RN50x4_fullft.pt'):
+        gdown.download('https://drive.google.com/uc?id=16yNRb4RpVSpOaHljE6XrCbrkgDyscTL-', 'cirr_comb_RN50x4_fullft.pt')
+        gdown.download('https://drive.google.com/uc?id=15KmKHilfPuBQTwmiHQchGoiQgSq4KoBU', 'cirr_clip_RN50x4_fullft.pt')
+    
     clip_model, clip_preprocess = clip.load("RN50x4")
+    clip_model.load_state_dict(torch.load('cirr_clip_RN50x4_fullft.pt', map_location=device)['CLIP'])
     clip_model.eval()
+    
     input_dim = clip_model.visual.input_resolution
     feature_dim = clip_model.visual.output_dim
     preprocess = targetpad_transform(1.25, input_dim)
@@ -66,13 +75,13 @@ def main():
     cirr_test_dataset = CIRRDataset('test1', preprocess)
     extract_and_save_index_features(cirr_test_dataset, clip_model, feature_dim, 'cirr_test')
 
-    # extract and save fashionIQ features
-    dress_types = ['dress', 'toptee', 'shirt']
-    for dress_type in dress_types:
-        val_dataset = FashionIQDataset('val', [dress_type], preprocess)
-        extract_and_save_index_features(val_dataset, clip_model, feature_dim, f'fashionIQ_val_{dress_type}')
-        test_dataset = FashionIQDataset('test', [dress_type], preprocess)
-        extract_and_save_index_features(test_dataset, clip_model, feature_dim, f'fashionIQ_test_{dress_type}')
+    # # extract and save fashionIQ features
+    # dress_types = ['dress', 'toptee', 'shirt']
+    # for dress_type in dress_types:
+    #     val_dataset = FashionIQDataset('val', [dress_type], preprocess)
+    #     extract_and_save_index_features(val_dataset, clip_model, feature_dim, f'fashionIQ_val_{dress_type}')
+    #     test_dataset = FashionIQDataset('test', [dress_type], preprocess)
+    #     extract_and_save_index_features(test_dataset, clip_model, feature_dim, f'fashionIQ_test_{dress_type}')
 
 
 if __name__ == '__main__':
