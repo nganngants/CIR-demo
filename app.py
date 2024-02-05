@@ -13,6 +13,7 @@ import clip
 import numpy as np
 import torch
 import faiss
+import gdown
 
 from flask import Flask, send_file, url_for
 from flask import render_template, request, redirect
@@ -253,7 +254,7 @@ def _load_assets():
     """
     Load all the necessary assets
     """
-
+    
     app.config['UPLOAD_FOLDER'].mkdir(exist_ok=True, parents=True)
     p = Process(target=delete_uploaded_images)
     p.start()
@@ -264,17 +265,28 @@ def _load_assets():
     # Load CLIP model and Combiner networks
     global clip_model
     global clip_preprocess
+    
     clip_model, clip_preprocess = clip.load("RN50x4")
-    clip_model = clip_model.eval().to(device)
 
     global cirr_combiner
     cirr_combiner = torch.hub.load(server_base_path, source='local', model='combiner', dataset='cirr')
     cirr_combiner = torch.jit.script(cirr_combiner).type(data_type).to(device).eval()
 
+    # Load pretrained
+    if not os.path.isfile('cirr_comb_RN50x4_fullft.pt'):
+        gdown.download('https://drive.google.com/uc?id=16yNRb4RpVSpOaHljE6XrCbrkgDyscTL-', 'cirr_comb_RN50x4_fullft.pt')
+        gdown.download('https://drive.google.com/uc?id=15KmKHilfPuBQTwmiHQchGoiQgSq4KoBU', 'cirr_clip_RN50x4_fullft.pt')
+    
+    clip_model.load_state_dict(torch.load('cirr_clip_RN50x4_fullft.pt', map_location=device)['CLIP'])
+    cirr_combiner.load_state_dict(torch.load('cirr_comb_RN50x4_fullft.pt', map_location=device)['Combiner'])
+    
+    clip_model = clip_model.eval().to(device)
+    
     # Load faiss
     global index
-    index = faiss.IndexFlatIP(640)
-    index.add(cirr_val_index_features)
+    index = faiss.index_factory(640, "PCA320,IVF10_HNSW32,Flat")
+    index.train(cirr_test_index_features)
+    index.add(cirr_test_index_features)
 
 def load_cirr_assets():
     global cirr_val_triplets
